@@ -1,0 +1,43 @@
+version: "3.3"
+
+services:
+  backend:
+    image: node:16-alpine
+    working_dir: /app/backend
+    command: sh -c "yarn && yarn start:dev"
+    environment:
+      DB_HOST: ${DB_HOST:-db}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      DB_NAME: ${DB_NAME:-postgres}
+      DEBUG: ${DEBUG:-true}
+    volumes:
+      - ${PWD:-./}:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+  frontend:
+    image: node:16-alpine
+    working_dir: /src/frontend
+    command: sh -c "yarn && yarn start"
+    environment:
+      REACT_APP_ENV: ${REACT_APP_ENV:-development}
+      REACT_APP_URL: ${REACT_APP_URL:-http://localhost:3000}
+      REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:8000}
+    volumes:
+      - "${PWD:-./}:/src"
+    ports:
+      - "3000:3000"
+  db:
+    image: postgres:13.0
+    environment:
+      POSTGRES_PASSWORD: "secret"
+      POSTGRES_DB: "postgres"
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports:
+      - "5432:5432"
+volumes:
+  dbdata:
